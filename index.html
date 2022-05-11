@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<meta charset="utf-8" />
+	<title>Title goes here</title>
+	<style>
+    	body { margin: 0; }
+		.transcript { 
+			padding: 10px;
+			border: 3px solid black; 
+			margin: 10px auto; 
+			
+			width: 90vw;
+			height: calc(100vh - 6px - 1em - (4 * 10px) - (4 * 3px) - (3 * 10px));
+			
+			overflow-y: scroll;
+			
+			background: white; }
+		.input {
+			padding: 10px;
+			border: 3px solid black; 
+			margin: 10px auto; 
+			
+			width: 80vw;
+			height: calc(6px + 1em);
+			
+			background: white; }
+		
+    </style>
+
+
+</head>
+<body>
+
+<div class="transcript" id="transcript"></div>
+
+<div class="input">
+
+<input type="text" id="input" style="width:calc(100% - 16px - 10px - 4ch - 10px);margin:0 10px 0 0"/><button type="button" onclick="send()">Send</button>
+
+</div>
+
+<script>
+const transcript = document.getElementById("transcript");
+const field = document.getElementById("input");
+
+function write(s) {
+	let p = document.createElement("div");
+	p.append(s);
+	transcript.append(p);
+}
+
+if (window.location.href.substring(0, 4) !== 'http') {
+	alert("I don't know what to do about this, but it shouldn't happen.");
+}
+
+let connected = false;
+
+let connection = new WebSocket('ws' + window.location.href.substring(4) + 'chat');
+
+connection.onopen = function (event) {
+	write("Connected!");
+	connected = true;
+}
+
+connection.onclose = function (event) {
+	write("Disconnected!");
+	connected = false;
+}
+
+connection.onerror = function (event) {
+	write("Error: " + event.data);
+	console.log(event);
+}
+
+connection.onmessage = function (event) {
+	write(event.data);
+}
+
+function send() {
+	if (connected) {
+		connection.send(field.value);
+		field.value = "";
+	}
+}
+
+field.addEventListener('keydown', function onEvent(event) {
+    if (event.key === "Enter") {
+        send();
+    }
+});
+
+
+
+</script>
+
+
+
+</body>
+</html>

@@ -22,7 +22,7 @@ enum Message {
 
 fn main() {
 	let (tx, rx) = mpsc::channel();
-    let listener = TcpListener::bind("127.0.0.1:2345").unwrap();
+    let listener = TcpListener::bind("0.0.0.0:2345").unwrap();
 	
 	let txc = tx.clone();
 	

@@ -1,104 +1,140 @@
 <!DOCTYPE html>
 <html>
+
 <head>
 	<meta charset="utf-8" />
 	<title>Chat</title>
 	<style>
-    	body { margin: 0; }
-		.transcript { 
+		body {
+			margin: 0;
+		}
+
+		* {
+			font-family: 'Lucida Sans', 'Lucida Sans Regular', 'Lucida Grande', 'Lucida Sans Unicode', Geneva, Verdana, sans-serif;
+			font-size: large;
+		}
+
+		.transcript {
 			padding: 10px;
-			border: 3px solid black; 
-			margin: 10px auto; 
-			
+			border: 3px solid black;
+			margin: 10px auto;
+
 			width: 90vw;
 			height: calc(100vh - 6px - 1em - (4 * 10px) - (4 * 3px) - (3 * 10px));
-			
+
 			overflow-y: scroll;
-			
-			background: white; }
+
+			background: white;
+		}
+
 		.input {
 			padding: 10px;
-			border: 3px solid black; 
-			margin: 10px auto; 
-			
+			border: 3px solid black;
+			margin: 10px auto;
+
 			width: 80vw;
 			height: calc(6px + 1em);
-			
-			display: flex;
 
-			background: white; }
-		
-    </style>
+			display: flex;
+			gap: 10px;
+
+			background: white;
+		}
+	</style>
 
 
 </head>
+
 <body>
 
-<div class="transcript" id="transcript"></div>
+	<div class="transcript" id="transcript"></div>
 
-<div class="input">
+	<div class="input">
 
-<input type="text" id="input" style="width:100%;margin:0 10px 0 0"/>
+		<input type="text" id="username" oninput="resize(this)" placeholder="username">
 
-<button type="button" onclick="send()">Send</button>
+		<input type="text" id="field" style="width:100%" />
 
-</div>
+		<button type="button" onclick="send()">Send</button>
 
-<script>
-const transcript = document.getElementById("transcript");
-const field = document.getElementById("input");
+	</div>
 
-function write(s) {
-	let p = document.createElement("div");
-	p.append(s);
-	transcript.append(p);
-}
+	<script>
+		//'use strict';
 
-if (window.location.href.substring(0, 4) !== 'http') {
-	alert("I don't know what to do about this, but it shouldn't happen.");
-}
+		const transcript = document.getElementById("transcript");
+		const field = document.getElementById("field");
+		const username = document.getElementById("username")
 
-let connected = false;
+		function write(s) {
+			let p = document.createElement("div");
+			p.append(s);
+			transcript.append(p);
+		}
 
-let connection = new WebSocket('ws' + window.location.href.substring(4) + 'chat');
+		function resize(e) {
+			o = document.createElement('div')
+			o.innerHTML = e.value || e.placeholder;
+			o.style = "position: absolute; float: left; white-space: pre;visibility: hidden" 
+			o.style.font = getComputedStyle(e).font;
 
-connection.onopen = function (event) {
-	write("Connected!");
-	connected = true;
-}
+			document.getElementsByTagName('body')[0].append(o);
 
-connection.onclose = function (event) {
-	write("Disconnected!");
-	connected = false;
-}
+			e.style.width = o.offsetWidth + 'px';
 
-connection.onerror = function (event) {
-	write("Error: " + event.data);
-	console.log(event);
-}
+			console.log(o)
 
-connection.onmessage = function (event) {
-	write(event.data);
-}
+			o.remove();
+		}
 
-function send() {
-	if (connected) {
-		connection.send(field.value);
-		field.value = "";
-	}
-}
+		resize(username)
 
-field.addEventListener('keydown', function onEvent(event) {
-    if (event.key === "Enter") {
-        send();
-    }
-});
+		if (window.location.href.substring(0, 4) !== 'http') {
+			alert("I don't know what to do about this, but it shouldn't happen.");
+		}
+
+		let connected = false;
+
+		let connection = new WebSocket('ws' + window.location.href.substring(4) + 'chat');
+
+		connection.onopen = function (event) {
+			write("Connected!");
+			connected = true;
+		}
+
+		connection.onclose = function (event) {
+			write("Disconnected!");
+			connected = false;
+		}
+
+		connection.onerror = function (event) {
+			write("Error: " + event.data);
+			console.log(event);
+		}
+
+		connection.onmessage = function (event) {
+			write(event.data);
+		}
+
+		function send() {
+			if (connected) {
+				connection.send((username.value && ('<' + username.value + '> ')) + field.value);
+				field.value = "";
+			}
+		}
+
+		field.addEventListener('keydown', function onEvent(event) {
+			if (event.key === "Enter") {
+				send();
+			}
+		});
 
 
 
-</script>
+	</script>
 
 
 
 </body>
+
 </html>

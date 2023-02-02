@@ -74,7 +74,7 @@
 
 		function resize(e) {
 			o = document.createElement('div')
-			o.innerHTML = e.value || e.placeholder;
+			o.innerText = e.value || e.placeholder;
 			o.style = "position: absolute; float: left; white-space: pre;visibility: hidden" 
 			o.style.font = getComputedStyle(e).font;
 

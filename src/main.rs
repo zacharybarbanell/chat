@@ -185,7 +185,7 @@ fn chat(mut stream: TcpStream, id: i32, tx: mpsc::Sender<Message>, rx: mpsc::Rec
             tx.send(Message::Chat(match String::from_utf8(partial) {
                 Ok(s) => s,
                 Err(s) => {
-                    panic!("{:?}", s.as_bytes());
+                    panic!("{:?}", s);
                 }
             }))
             .unwrap();

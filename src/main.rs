@@ -47,9 +47,12 @@ fn main() {
                 idx += 1;
             }
             Message::Chat(chat) => {
-                for tx in transmitters.values() {
-                    tx.send(Message::Chat(chat.clone()));
-                }
+                transmitters.retain(|id, tx|
+                    match tx.send(Message::Chat(chat.clone())) {
+                        Ok(()) => true,
+                        Err(_) => false,
+                    }
+                )
             }
             Message::Close(n) => {
                 transmitters
@@ -68,7 +71,7 @@ fn handle_connection(
     tx: mpsc::Sender<Message>,
     rx: mpsc::Receiver<Message>,
 ) {
-    const bad_response: &str = "HTTP/1.1 400 Bad Request\r\n\r\n";
+    const BAD_RESPONSE: &str = "HTTP/1.1 400 Bad Request\r\n\r\n";
 
     let mut reader = BufReader::new(&stream);
     let mut request_line = String::new();
@@ -125,13 +128,13 @@ fn handle_connection(
                     return;
                 }
                 None => {
-                    stream.write(bad_response.as_bytes()).unwrap();
+                    stream.write(BAD_RESPONSE.as_bytes()).unwrap();
                     stream.flush().unwrap();
                 }
             }
         }
         _ => {
-            stream.write(bad_response.as_bytes()).unwrap();
+            stream.write(BAD_RESPONSE.as_bytes()).unwrap();
             stream.flush().unwrap();
         }
     }
@@ -170,7 +173,7 @@ fn chat(mut stream: TcpStream, id: i32, tx: mpsc::Sender<Message>, rx: mpsc::Rec
                 u64::from_be_bytes(buf)
             }
             _ => {
-                panic!();
+                unreachable!();
             }
         };
         let mut mask = [0; 4];
